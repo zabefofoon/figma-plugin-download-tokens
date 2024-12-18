@@ -1,0 +1,21 @@
+<h2>Rectangle Creator</h2>
+<p>Count: <input id="count" type="number" value="5"></p>
+<button id="exportEl">Export</button>
+<button id="createEl">Create</button>
+<button id="cancelEl">Cancel</button>
+
+<script>
+createEl.onclick = () => {
+  // const textbox = document.getElementById('count');
+  // const count = parseInt(textbox.value, 10);
+  // parent.postMessage({ pluginMessage: { type: 'create-shapes', count } }, '*')
+}
+
+cancelEl.onclick = () => {
+  // parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+}
+
+exportEl.onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'export' } }, '*')
+}
+</script>
