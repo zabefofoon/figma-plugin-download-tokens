@@ -13,13 +13,21 @@ function rgbToHex({ r, g, b }: RGB | RGBA) {
 }
 
 function setObj(obj: Record<string, any>, nameString: string, value: any) {
-  const [theme, name] = nameString.split("/")
-  if (!name) {
-    obj[theme] = value
-  } else {
-    if (!obj[theme]) obj[theme] = {}
-    if (typeof obj[theme] === "object") obj[theme][name] = value
+  const keys = nameString.split("/")
+
+  function setNestedObject(currentObj: Record<string, any>, keys: string[], value: any) {
+    const [key, ...restKeys] = keys
+    if (!restKeys.length) {
+      currentObj[key] = value
+    } else {
+      if (!currentObj[key]) currentObj[key] = {}
+      if (typeof currentObj[key] === "object") {
+        setNestedObject(currentObj[key], restKeys, value)
+      }
+    }
   }
+
+  setNestedObject(obj, keys, value)
 }
 
 function setColorVariables(variable: Variable, obj: Record<string, any>) {
@@ -41,13 +49,21 @@ function setPaintStyles(paint: PaintStyle, obj: Record<string, any>) {
 }
 
 function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
-  const [folder, name] = textStyle.name.split("/")
-  if (!name) {
-    if (textStyle.type === "TEXT") addTextStyle(obj, textStyle.name, textStyle)
-  } else {
-    if (!obj[folder]) obj[folder] = {}
-    if (textStyle.type === "TEXT") addTextStyle(obj[folder], name, textStyle)
+  const keys = textStyle.name.split("/")
+
+  function setNestedStyles(currentObj: any, keys: string[], textStyle: TextStyle) {
+    const [key, ...restKeys] = keys
+    if (!restKeys.length) {
+      if (textStyle.type === "TEXT") {
+        addTextStyle(currentObj, key, textStyle)
+      }
+    } else {
+      if (!currentObj[key]) currentObj[key] = {}
+      setNestedStyles(currentObj[key], restKeys, textStyle)
+    }
   }
+
+  setNestedStyles(obj, keys, textStyle)
 }
 
 const addTextStyle = (target: any, prefix: string, textStyle: TextStyle) => {
