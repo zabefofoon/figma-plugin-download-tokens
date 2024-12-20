@@ -106,20 +106,21 @@ function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
 }
 
 const addTextStyle = (target: any, prefix: string, textStyle: TextStyle) => {
-  target[`${prefix}-size`] = textStyle.fontSize
-  target[`${prefix}-font-family`] = textStyle.fontName.family
-  target[`${prefix}-font-style`] = textStyle.fontName.style
-  target[`${prefix}-line-height`] =
-    textStyle.lineHeight.unit === "AUTO"
-      ? "unset"
-      : textStyle.lineHeight.unit === "PIXELS"
-      ? `${textStyle.lineHeight.value}px`
-      : `${textStyle.lineHeight.value}%`
-
-  target[`${prefix}-letter-spacing`] =
-    textStyle.letterSpacing.unit === "PIXELS"
-      ? `${textStyle.letterSpacing.value}px`
-      : `${(textStyle.fontSize / 100) * textStyle.letterSpacing.value}px`
+  target[prefix] = {
+    "font-size": textStyle.fontSize,
+    "font-family": textStyle.fontName.family,
+    "font-style": textStyle.fontName.style,
+    "line-height":
+      textStyle.lineHeight.unit === "AUTO"
+        ? "unset"
+        : textStyle.lineHeight.unit === "PIXELS"
+        ? `${textStyle.lineHeight.value}px`
+        : `${textStyle.lineHeight.value}%`,
+    "letter-spacing":
+      textStyle.letterSpacing.unit === "PIXELS"
+        ? `${textStyle.letterSpacing.value}px`
+        : `${(textStyle.fontSize / 100) * textStyle.letterSpacing.value}px`,
+  }
 }
 
 figma.showUI(__html__)
@@ -130,6 +131,7 @@ figma.ui.onmessage = async (msg: { type: string; count: number }) => {
 
     const colors = {} as Record<string, any>
     const texts = {} as Record<string, any>
+    const shadows = {} as Record<string, any>
 
     // textStyles로부터 셋팅
     const textStyles = await figma.getLocalTextStylesAsync()
@@ -140,7 +142,7 @@ figma.ui.onmessage = async (msg: { type: string; count: number }) => {
     for (const paint of paints) setPaintStyles(paint, colors)
 
     const effects = await figma.getLocalEffectStylesAsync()
-    for (const effect of effects) setEffectStyles(effect, result)
+    for (const effect of effects) setEffectStyles(effect, shadows)
 
     // variables으로부터 셋팅
     const variables = await figma.variables.getLocalVariablesAsync()
@@ -152,6 +154,7 @@ figma.ui.onmessage = async (msg: { type: string; count: number }) => {
 
     result.colors = colors
     result.texts = texts
+    result.shadows = shadows
 
     figma.ui.postMessage({
       type: "download",

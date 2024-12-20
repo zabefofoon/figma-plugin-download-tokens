@@ -100,19 +100,19 @@ function setTextStyles(textStyle, obj) {
     setNestedStyles(obj, keys, textStyle);
 }
 const addTextStyle = (target, prefix, textStyle) => {
-    target[`${prefix}-size`] = textStyle.fontSize;
-    target[`${prefix}-font-family`] = textStyle.fontName.family;
-    target[`${prefix}-font-style`] = textStyle.fontName.style;
-    target[`${prefix}-line-height`] =
-        textStyle.lineHeight.unit === "AUTO"
+    target[prefix] = {
+        "font-size": textStyle.fontSize,
+        "font-family": textStyle.fontName.family,
+        "font-style": textStyle.fontName.style,
+        "line-height": textStyle.lineHeight.unit === "AUTO"
             ? "unset"
             : textStyle.lineHeight.unit === "PIXELS"
                 ? `${textStyle.lineHeight.value}px`
-                : `${textStyle.lineHeight.value}%`;
-    target[`${prefix}-letter-spacing`] =
-        textStyle.letterSpacing.unit === "PIXELS"
+                : `${textStyle.lineHeight.value}%`,
+        "letter-spacing": textStyle.letterSpacing.unit === "PIXELS"
             ? `${textStyle.letterSpacing.value}px`
-            : `${(textStyle.fontSize / 100) * textStyle.letterSpacing.value}px`;
+            : `${(textStyle.fontSize / 100) * textStyle.letterSpacing.value}px`,
+    };
 };
 figma.showUI(__html__);
 figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
@@ -120,6 +120,7 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
         const result = {};
         const colors = {};
         const texts = {};
+        const shadows = {};
         // textStyles로부터 셋팅
         const textStyles = yield figma.getLocalTextStylesAsync();
         for (const textStyle of textStyles)
@@ -130,7 +131,7 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
             setPaintStyles(paint, colors);
         const effects = yield figma.getLocalEffectStylesAsync();
         for (const effect of effects)
-            setEffectStyles(effect, result);
+            setEffectStyles(effect, shadows);
         // variables으로부터 셋팅
         const variables = yield figma.variables.getLocalVariablesAsync();
         for (const variable of variables) {
@@ -141,6 +142,7 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
         }
         result.colors = colors;
         result.texts = texts;
+        result.shadows = shadows;
         figma.ui.postMessage({
             type: "download",
             content: result,
