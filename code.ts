@@ -4,6 +4,39 @@
  * Local Styles의 Text styles
  **/
 
+function dropShadowToCSS(data: DropShadowEffect) {
+  const { r, g, b, a } = data.color
+  const { x, y } = data.offset
+  const radius = data.radius
+  const spread = data.spread
+
+  const color = `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`
+  return `${x}px ${y}px ${radius}px ${spread}px ${color}`
+}
+
+function gradientToCSS(name: string, data: GradientPaint) {
+  const gradientStops = data.gradientStops.map((stop) => {
+    const { r, g, b, a } = stop.color
+    const position = (stop.position * 100).toFixed(2)
+    return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(
+      b * 255
+    )}, ${a}) ${position}%`
+  })
+
+  const gradientTransform = data.gradientTransform
+  const x1 = gradientTransform[0][0]
+  const y1 = gradientTransform[0][1]
+  const x2 = gradientTransform[1][0]
+  const y2 = gradientTransform[1][1]
+
+  const angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI
+  const adjustedAngle = (angle + 360) % 360
+
+  const splittedName = name.split("-")
+  const deg = splittedName[splittedName.length - 1]
+  return `linear-gradient(${deg}deg, ${gradientStops.join(", ")})`
+}
+
 function rgbToHex({ r, g, b }: RGB | RGBA) {
   const toHex = (value: number) => {
     const result = Math.round(value * 255).toString(16) // 0-1 범위를 0-255로 변환
@@ -46,6 +79,12 @@ function setEtcVariables(variable: Variable, obj: Record<string, any>) {
 function setPaintStyles(paint: PaintStyle, obj: Record<string, any>) {
   const item = paint.paints[0]
   if (item.type === "SOLID") setObj(obj, paint.name, rgbToHex(item.color))
+  if (item.type === "GRADIENT_LINEAR") setObj(obj, paint.name, gradientToCSS(paint.name, item))
+}
+
+function setEffectStyles(effect: EffectStyle, obj: Record<string, any>) {
+  const item = effect.effects[0]
+  if (item.type === "DROP_SHADOW") setObj(obj, effect.name, dropShadowToCSS(item))
 }
 
 function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
@@ -99,6 +138,9 @@ figma.ui.onmessage = async (msg: { type: string; count: number }) => {
     // paientStyles로부터 셋팅
     const paints = await figma.getLocalPaintStylesAsync()
     for (const paint of paints) setPaintStyles(paint, colors)
+
+    const effects = await figma.getLocalEffectStylesAsync()
+    for (const effect of effects) setEffectStyles(effect, result)
 
     // variables으로부터 셋팅
     const variables = await figma.variables.getLocalVariablesAsync()
