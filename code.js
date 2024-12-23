@@ -101,8 +101,8 @@ function setTextStyles(textStyle, obj) {
 }
 const addTextStyle = (target, prefix, textStyle) => {
     target[prefix] = {
-        "font-size": textStyle.fontSize,
-        "font-family": textStyle.fontName.family,
+        "font-size": `${textStyle.fontSize}px`,
+        // "font-family": textStyle.fontName.family,
         "font-style": textStyle.fontName.style,
         "line-height": textStyle.lineHeight.unit === "AUTO"
             ? "unset"

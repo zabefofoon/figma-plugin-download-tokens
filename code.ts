@@ -107,15 +107,15 @@ function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
 
 const addTextStyle = (target: any, prefix: string, textStyle: TextStyle) => {
   target[prefix] = {
-    "font-size": textStyle.fontSize,
-    "font-family": textStyle.fontName.family,
+    "font-size": `${textStyle.fontSize}px`,
+    // "font-family": textStyle.fontName.family,
     "font-style": textStyle.fontName.style,
     "line-height":
       textStyle.lineHeight.unit === "AUTO"
         ? "unset"
         : textStyle.lineHeight.unit === "PIXELS"
-        ? `${textStyle.lineHeight.value}px`
-        : `${textStyle.lineHeight.value}%`,
+          ? `${textStyle.lineHeight.value}px`
+          : `${textStyle.lineHeight.value}%`,
     "letter-spacing":
       textStyle.letterSpacing.unit === "PIXELS"
         ? `${textStyle.letterSpacing.value}px`
