@@ -1,8 +1,46 @@
+declare function alert(message?: string): void;
+
 /**
  * Local Variables의 color
  * Local Styles의 Color styles (solid만)
  * Local Styles의 Text styles
  **/
+
+let valid = true
+
+function transformFontWeight (str: string) {
+  switch(str) {
+    case "Thin":
+    return 100
+
+    case "Extra Light":
+    return 200
+
+    case "Light":
+    return 300
+
+    case "Regular":
+    return 400
+    
+    case "Medium":
+    return 500
+    
+    case "Semi Bold":
+    return 600
+
+    case "Bold":
+    return 700
+
+    case "Extra Bold":
+    return 800
+
+    case "Black":
+    return 900
+
+    default:
+      return 400
+  }
+}
 
 function dropShadowToCSS(data: DropShadowEffect) {
   const { r, g, b, a } = data.color
@@ -64,34 +102,108 @@ function setObj(obj: Record<string, any>, nameString: string, value: any) {
 }
 
 function setColorVariables(variable: Variable, obj: Record<string, any>) {
+  const [theme, name] = variable.name.split('/') 
+  
+  if (!name) {
+    alert(`When specifying a color, you need to select a theme.\n${theme}(X)\n\nex) white/--bg-red-100`)
+    valid = false
+    return
+  }
+
+  if (!name.includes('--')) {
+    alert(`The name of the color must include "--${name}".`)
+    valid = false
+    return
+  }
+
   const colorValues = Object.keys(variable.valuesByMode).map(
     (key) => variable.valuesByMode[key]
   ) as RGBA[]
-
+  
   setObj(obj, variable.name, rgbToHex(colorValues[0]))
 }
 
 function setEtcVariables(variable: Variable, obj: Record<string, any>) {
+  const [_,responsiveMode, name] = variable.name.split('/')
+  
+  if (!name) {
+    alert(`When specifying a round, you need to specify responsive mode.\n${responsiveMode}(X)\n\nex) Rounded/pc/--rounded-sm`)
+    valid = false
+    return
+  }
+
+  if (!name.includes('--')) {
+    alert(`The name of the round must include "--${name}".`)
+    valid = false
+    return
+  }
+
   const values = Object.keys(variable.valuesByMode).map((key) => variable.valuesByMode[key])
   setObj(obj, variable.name, values[0])
 }
 
 function setPaintStyles(paint: PaintStyle, obj: Record<string, any>) {
   const item = paint.paints[0]
+  const [theme, name] = paint.name.split('/') 
+  
+  if (!name) {
+    alert(`When specifying a color, you need to specify a theme.\n${theme}(X)\n\nex) white/--bg-red-100`)
+    valid = false
+    return
+  }
+
+  if (!name.includes('--')) {
+    alert(`The name of the color must be "--${name}".`)
+    valid = false
+    return
+  }
+  
   if (item.type === "SOLID") setObj(obj, paint.name, rgbToHex(item.color))
   if (item.type === "GRADIENT_LINEAR") setObj(obj, paint.name, gradientToCSS(paint.name, item))
 }
 
 function setEffectStyles(effect: EffectStyle, obj: Record<string, any>) {
+  const [responsiveMode, name] = effect.name.split('/') 
+  
+  if (!name) {
+    alert(`When specifying a shadow, you need to specify responsive mode.\n${responsiveMode}(X)\n\nex) pc/--shadow-sm`)
+    valid = false
+    return
+  }
+
+  if (!name.includes('--')) {
+    alert(`The name of the shadow must include "--${name}".`)
+    valid = false
+    return
+  }
+
   const item = effect.effects[0]
+
   if (item.type === "DROP_SHADOW") setObj(obj, effect.name, dropShadowToCSS(item))
 }
 
 function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
-  const keys = textStyle.name.split("/")
 
+  const [theme, name] = textStyle.name.split('/') 
+
+  if (!name) {
+    alert(`When specifying a text style, you need to specific a responsive mode.\n${theme}(X)\n\nex) pc/--heading-1`)
+    valid = false
+    return
+  }
+
+  if (!name.includes('--')) {
+    alert(`The name of the text style must be "--${name}".`)
+    valid = false
+    return
+  }
+
+
+  const keys = textStyle.name.split("/")
+  
   function setNestedStyles(currentObj: any, keys: string[], textStyle: TextStyle) {
     const [key, ...restKeys] = keys
+    
     if (!restKeys.length) {
       if (textStyle.type === "TEXT") {
         addTextStyle(currentObj, key, textStyle)
@@ -105,11 +217,11 @@ function setTextStyles(textStyle: TextStyle, obj: Record<string, any>) {
   setNestedStyles(obj, keys, textStyle)
 }
 
-const addTextStyle = (target: any, prefix: string, textStyle: TextStyle) => {
+const addTextStyle = (target: any, prefix: string, textStyle: TextStyle) => {  
   target[prefix] = {
     "font-size": `${textStyle.fontSize}px`,
     // "font-family": textStyle.fontName.family,
-    "font-style": textStyle.fontName.style,
+    "font-weight": transformFontWeight(textStyle.fontName.style),
     "line-height":
       textStyle.lineHeight.unit === "AUTO"
         ? "unset"
@@ -127,6 +239,7 @@ figma.showUI(__html__)
 
 figma.ui.onmessage = async (msg: { type: string; count: number }) => {
   if (msg.type === "export") {
+    valid = true
     const result = {} as any
 
     const colors = {} as Record<string, any>
@@ -155,7 +268,10 @@ figma.ui.onmessage = async (msg: { type: string; count: number }) => {
     result.colors = colors
     result.texts = texts
     result.shadows = shadows
+    if (!valid) return
 
+    valid = true
+    
     figma.ui.postMessage({
       type: "download",
       content: result,

@@ -4,41 +4,43 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+  }
+
+  .button {
+    cursor: pointer;
+    appearance: none;
+    width: 100%;
+    padding: 8px 0;
+    border-radius: 99px;
+    border: 0;
+    box-shadow: 0 2px 5px #ccc;
   }
 
   #exportEl {
-    appearance: none;
-
-    width: 100%;
-
-    padding: 8px 0;
-    margin-top: 20px;
-    border-radius: 99px;
-    border: 0;
-
     color: white;
     font-weight: bold;
-
+    font-size: 12px;
     background: black;
-    box-shadow: 0 2px 5px #ccc;
+    margin-top: 12px;
   }
 
   .notices {
     width: calc(100% - 30px);
     list-style-position: inside;
     font-size: 13px;
+
+    margin-top: 16px;
     padding: 0;
     list-style: "· ";
 
     display: flex;
     flex-direction: column;
 
-    gap: 2px;
+    gap: 1px;
   }
 </style>
 <div class="container">
-  <button id="exportEl">Download Tokens</button>
+  <button id="exportEl" class="button">Download Tokens</button>
   <span class="caption"></span>
   <ul class="notices">
     <li>Local variables, Local styles</li>
